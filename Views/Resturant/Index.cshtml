@@ -1,0 +1,31 @@
+@model IEnumerable<Restaurant>
+
+<h1>Restaurant List</h1>
+<a asp-action="Create" class="btn btn-primary">Create New</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Location</th>
+            <th>Cuisine</th>
+            <th>Rating</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var restaurant in Model)
+        {
+            <tr>
+                <td>@restaurant.Name</td>
+                <td>@restaurant.Location</td>
+                <td>@restaurant.CuisineType</td>
+                <td>@restaurant.Rating</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@restaurant.Id">Details</a> |
+                    <a asp-action="Edit" asp-route-id="@restaurant.Id">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@restaurant.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
