@@ -1,36 +1,73 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-
 using ResturantReviewApp.Models;
-
+using System.Net.Http;
+using System.Text.Json;
+using System.Text;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 
 namespace ResturantReviewApp.Controllers
 {
     public class ResturantController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly HttpClient _httpClient;
+        private readonly string _apiBaseUrl;
 
-        public ResturantController(ApplicationDbContext context)
+        // Constructor to inject IHttpClientFactory and configuration
+        public ResturantController(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
-            _context = context;
+            _httpClient = httpClientFactory.CreateClient();
+            _apiBaseUrl = configuration.GetValue<string>("ApiBaseUrl"); // Reads base URL from appsettings.json
         }
 
         // GET: Resturant
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var restaurants = _context.Restaurants.ToList();
-            return View(restaurants);
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_apiBaseUrl}/api/Restaurant");
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonData = await response.Content.ReadAsStringAsync();
+                    var restaurants = JsonSerializer.Deserialize<List<Restaurant>>(jsonData, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    return View(restaurants);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching restaurants: {ex.Message}");
+            }
+
+            ViewBag.ErrorMessage = "Unable to load restaurants. Please try again later.";
+            return View(new List<Restaurant>());
         }
 
         // GET: Resturant/Details/5
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var restaurant = _context.Restaurants.Find(id);
-            if (restaurant == null)
+            try
             {
-                return NotFound();
+                var response = await _httpClient.GetAsync($"{_apiBaseUrl}/api/Restaurant/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonData = await response.Content.ReadAsStringAsync();
+                    var restaurant = JsonSerializer.Deserialize<Restaurant>(jsonData, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    return View(restaurant);
+                }
             }
-            return View(restaurant);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching restaurant details: {ex.Message}");
+            }
+
+            return NotFound();
         }
 
         // GET: Resturant/Create
@@ -41,68 +78,126 @@ namespace ResturantReviewApp.Controllers
 
         // POST: Resturant/Create
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Create(Restaurant restaurant)
+        public async Task<IActionResult> Create(Restaurant restaurant)
         {
             if (ModelState.IsValid)
             {
-                _context.Restaurants.Add(restaurant);
-                _context.SaveChanges();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    var jsonData = JsonSerializer.Serialize(restaurant);
+                    var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                    var response = await _httpClient.PostAsync($"{_apiBaseUrl}/api/Restaurant", content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error creating restaurant: {ex.Message}");
+                }
+
+                ModelState.AddModelError("", "Unable to create restaurant. Please try again.");
             }
+
             return View(restaurant);
         }
 
         // GET: Resturant/Edit/5
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var restaurant = _context.Restaurants.Find(id);
-            if (restaurant == null)
+            try
             {
-                return NotFound();
+                var response = await _httpClient.GetAsync($"{_apiBaseUrl}/api/Restaurant/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonData = await response.Content.ReadAsStringAsync();
+                    var restaurant = JsonSerializer.Deserialize<Restaurant>(jsonData, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    return View(restaurant);
+                }
             }
-            return View(restaurant);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching restaurant for edit: {ex.Message}");
+            }
+
+            return NotFound();
         }
 
         // POST: Resturant/Edit/5
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Restaurant restaurant)
+        public async Task<IActionResult> Edit(Restaurant restaurant)
         {
-            if (id != restaurant.Id)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
-                _context.Update(restaurant);
-                _context.SaveChanges();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    var jsonData = JsonSerializer.Serialize(restaurant);
+                    var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                    var response = await _httpClient.PutAsync($"{_apiBaseUrl}/api/Restaurant/{restaurant.Id}", content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error updating restaurant: {ex.Message}");
+                }
+
+                ModelState.AddModelError("", "Unable to update restaurant. Please try again.");
             }
+
             return View(restaurant);
         }
 
         // GET: Resturant/Delete/5
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var restaurant = _context.Restaurants.Find(id);
-            if (restaurant == null)
+            try
             {
-                return NotFound();
+                var response = await _httpClient.GetAsync($"{_apiBaseUrl}/api/Restaurant/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonData = await response.Content.ReadAsStringAsync();
+                    var restaurant = JsonSerializer.Deserialize<Restaurant>(jsonData, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    return View(restaurant);
+                }
             }
-            return View(restaurant);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching restaurant for delete: {ex.Message}");
+            }
+
+            return NotFound();
         }
 
         // POST: Resturant/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(int id)
+        [HttpPost]
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var restaurant = _context.Restaurants.Find(id);
-            _context.Restaurants.Remove(restaurant);
-            _context.SaveChanges();
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                var response = await _httpClient.DeleteAsync($"{_apiBaseUrl}/api/Restaurant/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting restaurant: {ex.Message}");
+            }
+
+            return RedirectToAction(nameof(Delete), new { id });
         }
     }
 }

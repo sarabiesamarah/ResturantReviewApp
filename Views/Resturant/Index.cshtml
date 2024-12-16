@@ -1,8 +1,8 @@
-@model IEnumerable<Restaurant>
+@model IEnumerable<ResturantReviewApp.Models.Restaurant>
 
 <h1>Restaurant List</h1>
-<a asp-action="Create" class="btn btn-primary">Create New</a>
-<table class="table">
+
+<table>
     <thead>
         <tr>
             <th>Name</th>
@@ -18,7 +18,7 @@
             <tr>
                 <td>@restaurant.Name</td>
                 <td>@restaurant.Location</td>
-                <td>@restaurant.CuisineType</td>
+                <td>@restaurant.Cuisine</td>
                 <td>@restaurant.Rating</td>
                 <td>
                     <a asp-action="Details" asp-route-id="@restaurant.Id">Details</a> |

@@ -2,13 +2,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ResturantReviewApp.Models // Ensure the namespace matches your project
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
-        public DbSet<Restaurant> Restaurants { get; set; }
-
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-        }
+        public required DbSet<Restaurant> Restaurants { get; set; }
     }
 }

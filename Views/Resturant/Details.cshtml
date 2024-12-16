@@ -1,9 +1,10 @@
 @model ResturantReviewApp.Models.Restaurant
 
-<h1>@Model.Name</h1>
-<p><strong>Location:</strong> @Model.Location</p>
-<p><strong>Cuisine:</strong> @Model.CuisineType</p>
-<p><strong>Rating:</strong> @Model.Rating</p>
-<p><strong>Reviews:</strong> @string.Join(", ", Model.Reviews)</p> <!-- Include this only if Reviews is in the model -->
-<a asp-action="Index" class="btn btn-secondary">Back to List</a>
+<h1>Restaurant Details</h1>
 
+<p><strong>Name:</strong> @Model.Name</p>
+<p><strong>Location:</strong> @Model.Location</p>
+<p><strong>Cuisine:</strong> @Model.Cuisine</p>
+<p><strong>Rating:</strong> @Model.Rating</p>
+
+<a asp-action="Index">Back to List</a>
